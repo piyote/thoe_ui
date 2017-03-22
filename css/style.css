@@ -1,0 +1,15 @@
+body{
+	margin:0;
+	padding:0;
+}
+
+.timeline{
+	position: absolute;
+	width:100%;
+}
+
+.map_item {
+	border:1px solid red;
+	position: absolute;
+	float:left;
+}
