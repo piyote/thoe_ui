@@ -36,3 +36,26 @@ function xmlToJson(xml) {
 	}
 	return obj;
 };
+
+(function ($) {
+	$(document).ready(function(){
+		$("#main_wrapper").height(Thoe.height);
+		$('body').on('mousewheel', function(event) {
+		    Meter.scroll(event.deltaX, event.deltaY, event.deltaFactor)
+			event.preventDefault();
+		});
+	});
+})(jQuery);
+
+
+
+
+
+
+
+
+
+
+
+
+

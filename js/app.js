@@ -9,14 +9,18 @@
 		max_items_on_a_line : 10,
 		left_padding : 100,
 		service_url : "http://services.thoe.co/",
+//		service_url : "http://localhost/thoe_services/",
 		app_path : "app/views/nodes?display_id=page_1",
 		colors : ["#a39cb8","#bf3faa","#8cbfd9","#8bae85","#8bd8e3","#ba9cca","#d07777","#c99be3","#c5ab3d","#ecdd83","#7d89df","#ecaae2","#557979","#9c7375"],
 		timelines : [],
 //		number_of_timelines : this.timelines.length,
 		construct_page : function()
 		{
-			Thoe.get_line();
 			Thoe.max_items_on_a_line = Math.floor((this.width-this.left_padding)/this.item_width);
+			if(document.domain=="localhost") {
+				Thoe.service_url = "http://localhost/thoe_services/";
+			}
+			Thoe.get_line();
 		},
 		get_line : function(filters) {
 		  $.get( Thoe.service_url + Thoe.app_path, filters )
@@ -24,6 +28,7 @@
 	    	var json_data = xmlToJson(data);
 	        Thoe.timelines.push(json_data);
 	        Thoe.render();
+			Meter.construct();
 	      });
 		},
 		render : function() {
@@ -50,19 +55,29 @@
 		  
 		  var i = 0;
 		  timeline.forEach(function(item, key) { // create items on the timeline
-    		if (i<total_items) {
-    			var item_html = "<div id='map_"+index+"_item_"+key+"' class='map_item'></div>";
-    			new_map.append(item_html);
-    			var new_item = $("#map_"+index+"_item_"+key);
-    			new_item.css("top",(-1)*(Thoe.item_width-Thoe.line_height)/2); // todo: fix this to meet the relative height from top
-    			new_item.css("width",Thoe.item_width);
-    			new_item.css("height",Thoe.item_height);
-    			var empty_space = (Thoe.width - Thoe.left_padding - Thoe.item_width*total_items)/total_items;
-    			var one_item_absolute_width = empty_space + Thoe.item_width;
-    			new_item.css("left",one_item_absolute_width*key+Thoe.left_padding);
-    			i++;
-    		}
+    		var hidden = (i<total_items) ? "" : "hidden";
+			
+   			var item_html = "<div id='map_"+index+"_item_"+key+"' class='map_item "+hidden+"'></div>";
+   			new_map.append(item_html);
+   			var new_item = $("#map_"+index+"_item_"+key);
+   			new_item.css("top",(-1)*(Thoe.item_width-Thoe.line_height)/2); // todo: fix this to meet the relative height from top
+   			new_item.css("width",Thoe.item_width);
+   			new_item.css("height",Thoe.item_height);
+   			var empty_space = (Thoe.width - Thoe.left_padding - Thoe.item_width*total_items)/total_items;
+   			var one_item_absolute_width = empty_space + Thoe.item_width;
+   			new_item.css("left",one_item_absolute_width*key+Thoe.left_padding);
+   			
+   			new_item.append("<div class='node_image' >"+item.image["#text"]+"</div>");
+   			
+   			var img_url = new_item.find(".node_image img").attr("src");
+   			
+   			new_item.find(".node_image").css("background-image","url('"+img_url+"')");
+   			new_item.find(".node_image img").remove();
+   			i++;
 		  });
+		},
+		set_date : function() {
+			
 		}
 	}
 	
