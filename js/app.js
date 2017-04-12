@@ -29,6 +29,11 @@
 	        Thoe.timelines.push(json_data);
 	        Thoe.render();
 			Meter.construct();
+			$("#main_wrapper").height(Thoe.height);
+			$('body').on('mousewheel', function(event) {
+			    Meter.scroll(event.deltaX, event.deltaY, event.deltaFactor,event.pageX,event.pageY);
+				event.preventDefault();
+			});
 	      });
 		},
 		render : function() {

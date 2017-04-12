@@ -39,11 +39,11 @@ function xmlToJson(xml) {
 
 (function ($) {
 	$(document).ready(function(){
-		$("#main_wrapper").height(Thoe.height);
-		$('body').on('mousewheel', function(event) {
-		    Meter.scroll(event.deltaX, event.deltaY, event.deltaFactor)
-			event.preventDefault();
-		});
+		// $("#main_wrapper").height(Thoe.height);
+		// 		$('body').on('mousewheel', function(event) {
+		// 		    Meter.scroll(event.deltaX, event.deltaY, event.deltaFactor,event.pageX,event.pageY);
+		// 			event.preventDefault();
+		// 		});
 	});
 })(jQuery);
 

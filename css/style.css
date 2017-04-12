@@ -96,7 +96,8 @@ body{
 .division{
 	border-right:1px solid #ccc;
 	height:50px;
-	float:left;
+/*	float:left;*/
+	position:absolute;
 }
 
 .clear_both{
