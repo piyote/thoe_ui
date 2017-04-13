@@ -11,10 +11,12 @@
 		min_div_width: 100,
 		min_num_of_divs : 3,
 		max_num_of_divs : 7,
-		max_division_seconds : new BigNumber("315400000000"),
+		render_status : 0, // add_two_divs: 1,2,3; remove_two_divs: 4, render: 5
+		center_div : 0,
+		y : 0,
+		// max_division_seconds : new BigNumber("315400000000"),
 		construct : function() {
 			var meter_with = $("#meter").width();
-			// Meter.min_num_of_divs = Math.ceil(meter_with/(Meter.min_div_width*4));
 			Meter.max_num_of_divs = Math.floor(meter_with/(Meter.min_div_width));
 			Meter.initial_number_of_divisions = Math.round((Meter.min_num_of_divs+Meter.max_num_of_divs)/3);
 			Thoe.timelines.forEach(function(timeline, index) {
@@ -27,7 +29,6 @@
 			var dates = [];
 		  	timeline.forEach(function(item, key) { // create items on the timeline
     			var node_item = $("#map_"+index+"_item_"+key); // node item already created, just select it
-
 				var tis = new BigNumber(item.time_in_seconds["#text"]);
 				
 				Meter.min_time = (tis.compare(Meter.min_time)) ? Meter.min_time : tis;
@@ -42,64 +43,107 @@
 			Meter.render();
 		},
 		render : function() {
-			$(".division").remove();
-			// divide main div into smaller parts
-			var total_seconds_on_timeline = Meter.max_time.subtract(Meter.min_time);
 			
-			Meter.division_seconds = total_seconds_on_timeline.divide(Meter.initial_number_of_divisions);
+			// divide main div into smaller parts
+			if(Meter.y>0) {
+
+				var item = $("#division_"+Meter.center_div);
+				var secs = new BigNumber(parseFloat(item.attr("secs")));
+				// var new_time = Meter.division_seconds.add(secs.multiply(Meter.initial_number_of_divisions));
+				// Meter.min_time = secs;
+				var mousex_convert = Meter.mousex_convert(Meter.mousex);
+				var meter_with = $("#meter").width();
+				var new_position_div_id = parseInt(mousex_convert/(meter_with/Meter.initial_number_of_divisions));
+				// the old div should be placed under the mouse position
+				var new_div_secs = Meter.division_seconds.divide(Meter.initial_number_of_divisions);
+				Meter.min_time = (secs.subtract(new_div_secs.multiply(new_position_div_id)));
+				Meter.max_time = Meter.min_time.add(Meter.division_seconds);
+				
+				Meter.control_max_min(false);
+				
+			} 
+			$(".division").remove();
+			Meter.recalculate_time_ranges(5);
 			Meter.new_frames(Meter.initial_number_of_divisions);
+		},
+		control_max_min : function(render=false) {
+			
+			var min_sit = false;
+			var max_sit = false;
+			if(Meter.min_time.compare(Meter.universe_age)>0){
+				min_sit = true;
+			}
+			
+			if(Meter.max_time.compare(Meter.year_10000)>-1) {
+				max_sit = true;
+			}
+			
+			if(min_sit && max_sit) {
+				// do nothing
+			}
+			else {
+				if(min_sit) {
+					Meter.min_time = Meter.universe_age;
+				}
+				else if (max_sit) {
+					Meter.max_time = Meter.year_10000;
+				}
+			}
+			
+			var total_seconds_on_timeline = Meter.max_time.subtract(Meter.min_time);
+			Meter.division_seconds = total_seconds_on_timeline.divide(Meter.initial_number_of_divisions);
+			
+			if(render) {
+				Meter.render();
+			}
+			
+		},
+		recalculate_time_ranges : function(render_status) {
+			switch(render_status) {
+				case 0:
+					// do nothing
+					break;
+				case 1:
+					Meter.min_time = Meter.min_time.subtract(Meter.division_seconds.multiply(2));
+					Meter.control_max_min();
+					break;
+				case 2:
+					Meter.min_time = Meter.min_time.subtract(Meter.division_seconds);
+					Meter.max_time = Meter.max_time.add(Meter.division_seconds);
+					Meter.control_max_min();
+					break;
+				case 3:
+					Meter.max_time = Meter.max_time.add(Meter.division_seconds.multiply(2));
+					Meter.control_max_min();
+					break;					
+				case 4:	
+					Meter.min_time = Meter.min_time.add(Meter.division_seconds);
+					Meter.max_time = Meter.max_time.subtract(Meter.division_seconds);
+					Meter.control_max_min();
+					break;
+				case 5:
+					// var total_seconds_on_timeline = Meter.max_time.subtract(Meter.min_time);
+					// Meter.division_seconds = total_seconds_on_timeline.divide(Meter.initial_number_of_divisions);
+					Meter.control_max_min();
+					break;
+			}
 		},
 		new_frames : function(num_of_divs,start_from = 0) {
 			for(i=start_from;i<num_of_divs;i++) {
-				var division_html = "<div class='division_level_1 division' id='division_"+i+"' num='"+i+"'></div>";
-				$("#main_meter").append(division_html);
-				var meter_with = $("#meter").width();
-				var division_width = meter_with/num_of_divs;
-				$("#division_"+i).width(division_width);
-				var format_time = Meter.format_seconds(Meter.min_time.add(Meter.division_seconds*i));
-				$("#division_"+i).text(format_time);
-				$("#division_"+i).css("left",$("#division_"+i).attr("num")*$("#division_"+i).width());
-				// Meter.recalculate_max_secs();
+				var secs = Meter.min_time.add(Meter.division_seconds*i);
+				
+				var control = Meter.seconds_control(secs);
+				if(control) {
+					var division_html = "<div class='division_level_1 division' id='division_"+i+"' num='"+i+"' secs='"+secs+"'></div>";
+					$("#main_meter").append(division_html);
+					var meter_with = $("#meter").width();
+					var division_width = meter_with/num_of_divs;
+					$("#division_"+i).width(division_width);
+					var format_time = Meter.format_seconds(secs);
+					$("#division_"+i).text(format_time);
+					$("#division_"+i).css("left",$("#division_"+i).attr("num")*$("#division_"+i).width());
+				}
 			}
-			// Meter.recalculate_division_secs();
-		},
-		remove_divisions : function() {
-			var division_width = $(".division").width();
-			var meter_with = $("#meter").width();
-			var number_of_visible_divisions = Math.ceil(meter_with/division_width);
-			$( ".division:gt("+number_of_visible_divisions+")" ).remove();
-			Meter.recalculate_max_secs();
-		},
-		recalculate_division_secs : function() {
-			var num_of_divs = $(".division").length;
-			var total_seconds_on_timeline = Meter.max_time.subtract(Meter.min_time);
-			Meter.division_seconds = total_seconds_on_timeline.divide(num_of_divs);
-			// Meter.division_seconds = Meter.division_seconds.intPart();
-			Meter.division_seconds = (Meter.division_seconds<1) ? new BigNumber("1") : Meter.division_seconds;
-			// Meter.division_seconds = (Meter.division_seconds>=Meter.max_division_seconds) ? Meter.max_division_seconds : Meter.division_seconds;
-		},
-		recalculate_max_secs : function() {
-			var num_of_divs = $(".division").length;
-			Meter.max_time = Meter.min_time.add(Meter.division_seconds.multiply(num_of_divs));
-			// Meter.max_time = Meter.max_time.intPart();
-			// Meter.max_time = (Meter.max_time>Meter.year_10000) ? Meter.year_10000 : Meter.max_time;
-		},
-		recalculate_min_secs : function() {
-			var num_of_divs = $(".division").length;
-			Meter.min_time = Meter.max_time.subtract(Meter.division_seconds.multiply(num_of_divs));
-			// Meter.max_time = Meter.max_time.intPart();
-			// Meter.min_time = (Meter.min_time>Meter.year_10000) ? Meter.year_10000 : Meter.max_time;
-		},
-		zoom_center : function(y,mousex) {
-			var meter_width = parseFloat($("#meter").width());
-			var difference = (Thoe.width-meter_width)/2;
-			var num_of_divs = $(".division").length;
-			
-			var mousex_convert = Meter.mousex_convert(mousex);
-
-			var center_div_id = Math.ceil(mousex_convert/meter_width*num_of_divs);
-			// console.log(center_div_id);
-			return center_div_id;
 		},
 		mousex_convert : function(mousex) {
 			var meter_width = $("#meter").width();
@@ -108,7 +152,7 @@
 			if(mousex<difference) {
 				mousex_convert = 0;
 			}
-			else if(mousex>meter_width) {
+			else if((mousex-difference)>meter_width) {
 				mousex_convert = meter_width;
 			}
 			else {
@@ -117,7 +161,6 @@
 			return mousex_convert;
 		},
 		calculate_left : function(item,new_width,y,first_item_initial_left,old_width,mousex) {	
-			
 			var mousex_convert = Meter.mousex_convert(mousex);
 			var meter_width = $("#meter").width();
 			var num_of_divs = $(".division").length;
@@ -126,23 +169,53 @@
 			
 			var left = mousex_convert/meter_width*((num_of_divs)*(c-1)*old_width)*(-1)+first_item_initial_left+div_id*new_width;
 			
-			if(y<0 && !Meter.min_time.compare(Meter.universe_age)) {
-				left = div_id*new_width;
+			var min_abs = Meter.min_time.abs();
+			var universe_abs = Meter.universe_age.abs();
+			
+			var min_check = (min_abs.compare(universe_abs)<0);
+			
+			if(y<0) {
+				if (min_check) {
+					if(Meter.max_time.compare(Meter.year_10000)>-1) {
+						// console.log("condition 1");
+						left = meter_width-new_width*(num_of_divs-div_id);
+					}
+					else {
+						// normal
+						// console.log("condition 2");
+					}
+				}
+				else {
+					if(Meter.max_time.compare(Meter.year_10000)>-1) {
+						// this shouldn't happen at all
+						// console.log("condition 3");
+					}
+					else {
+						left = div_id*new_width;
+						// console.log("condition 4");
+					}
+				}
 			}
 			else {
-				if(Meter.max_time>Meter.year_10000) {
-					left = meter_width-new_width*(num_of_divs-div_id);
+				if(Meter.max_time.compare(Meter.year_10000)>-1) {
+					// console.log("condition 5");
+					// left = meter_width-new_width*(num_of_divs-div_id);
 				}
-				else if(!Meter.min_time.compare(Meter.universe_age)) {
-					left = div_id*new_width;
+				else {
+					// console.log("condition 6");
 				}
 			}
 			
 			item.css("left",left);		
-
+		},
+		zoom_center : function(y,mousex) {
+			var mousex_convert = Meter.mousex_convert(mousex);
+			var real_mousex = mousex_convert + Math.abs(parseFloat($("#division_0").css("left")));
+			var center_div_id = parseInt(real_mousex/$(".division").width());
+			return center_div_id;
 		},
 		total_rerender : function(y,mousex) {
-			if((Meter.division_seconds<=1 && y>0) || (Meter.max_time>=Meter.year_10000 && y<0)) {
+			if(((Meter.division_seconds<=1 && y>0)) || (Meter.min_time.compare(Meter.universe_age)<1 && Meter.max_time.compare(Meter.year_10000)>-1 && y<0) ) {
 				return;
 			}
 			var num_of_divs = $(".division").length;
@@ -152,53 +225,29 @@
 			var total_expand = new_width - old_width;
 			$(".division").width(new_width);
 			
-			// 1. change division widths
 			$(".division").each(function(){
 				Meter.calculate_left($(this),new_width,y,first_item_initial_left,old_width,mousex);
 			});
 			
-			// 2. create new divs
-			// var meter_with = $("#meter").width();
-			// var new_division_width = $(".division").width();
-			// var new_number_of_divisions = Math.floor(meter_with/new_division_width);
-			// var start_from = parseInt($(".division:last-child").attr("num")) + 1;
-			
-			// Meter.new_frames(new_number_of_divisions,start_from);
-			
-			// 3. remove divisions if there are more than allowed visible
-			// Meter.remove_divisions();
-			
-			// 4. can divs fit?
-			// var num_of_divs = $(".division").length;
-			// var division_width = $(".division").width();
-			// var max_num_of_divs = Math.ceil(meter_with/Meter.min_div_width);
-			// if(num_of_divs<=Meter.min_num_of_divs || num_of_divs>max_num_of_divs) {
-			// 	if(Meter.division_seconds>=Meter.min_division_seconds) {
-			// 		Meter.render();
-			// 	}
-			// }
 			Meter.frame_control();
 		},
 		frame_control : function() {
 			var num_of_divs = $(".division").length;
 			var division_width = $(".division").width();
 			var meter_with = $("#meter").width();
-			if(num_of_divs*division_width>=meter_with*1.5) {
+			if(num_of_divs*division_width>=meter_with) {
 				if(num_of_divs<=Meter.min_num_of_divs ) {
 					Meter.render();
 				}
 				else {
-					Meter.remove_two_divs();
+					if(num_of_divs*division_width>=meter_with*2) {
+						Meter.remove_two_divs();
+					}
 				}
 			}
 			else if(num_of_divs*division_width<meter_with*0.9) {
-				// console.log("we need to add new divs from both sides.");
 				Meter.add_two_divs();
 			}
-
-			// Meter.recalculate_max_secs();
-			// 			Meter.recalculate_min_secs();
-			// Meter.recalculate_division_secs();
 		},
 		remove_two_divs : function() {
 			$(".division:first-child").remove();
@@ -207,8 +256,28 @@
 				$(this).attr("id","division_"+index);
 				$(this).attr("num",index);
 			});
-			Meter.min_time = Meter.min_time.add(Meter.division_seconds);
-			Meter.max_time = Meter.max_time.subtract(Meter.division_seconds);
+
+			Meter.recalculate_time_ranges(4);
+		},
+		seconds_control : function(secs) {
+			// var result = true;
+			// if(secs.compare(Meter.universe_age)>0){
+			// 	result = false;
+			// 	Meter.min_time = Meter.universe_age;
+			// 	secs = Meter.min_time;
+			// }
+			// 
+			// if(secs.compare(Meter.year_10000)>0) {
+			// 	Meter.max_time = Meter.year_10000;
+			// 	result = false;
+			// 	secs = Meter.max_time;
+			// }
+			// 
+			// if(!result) {
+			// 	Meter.render();
+			// }
+			// return result;
+			return true;
 		},
 		add_two_divs : function() {
 			var num_of_divs = $(".division").length;
@@ -216,58 +285,114 @@
 				Meter.render();
 			}
 			
+			var control1 = control2 = control3 = control4 = control5 = false;
 			if(Meter.min_time.compare(Meter.universe_age)) {
-				var division_html = "<div class='division_level_1 division' id='division_999' num='999'></div>";
-				$("#main_meter").prepend(division_html);
-				$("#division_999").width($("#division_0").width());
+				if(Meter.max_time.compare(Meter.year_10000)<0) {
+					
+					var secs1 = Meter.min_time.subtract(Meter.division_seconds);
+					var secs2 = Meter.max_time.add(Meter.division_seconds);
+					
+					control1 = Meter.seconds_control(secs1);
+					control2 = Meter.seconds_control(secs2);
+					
+					if(control1 && control2) {
+						var division_html = "<div class='division_level_1 division' id='division_999' num='999'></div>";
+						$("#main_meter").prepend(division_html);
+						$("#division_999").width($("#division_0").width());
 
-				var left = parseFloat($("#division_0").css("left")) - $("#division_0").width();
-				$("#division_999").css("left", left);
+						var left = parseFloat($("#division_0").css("left")) - $("#division_0").width();
+						$("#division_999").css("left", left);
 
-				var division_html = "<div class='division_level_1 division' id='division_1000' num='1000'></div>";
-				$("#main_meter").append(division_html);
-				$("#division_1000").width($("#division_0").width());
+						var division_html = "<div class='division_level_1 division' id='division_1000' num='1000'></div>";
+						$("#main_meter").append(division_html);
+						$("#division_1000").width($("#division_0").width());
 
-				var num_of_divs = $(".division").length - 3;
-				var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
-				$("#division_1000").css("left", left_1000);
-				
-				Meter.min_time = Meter.min_time.subtract(Meter.division_seconds);
-				Meter.max_time = Meter.max_time.add(Meter.division_seconds);
+						var num_of_divs = $(".division").length - 3;
+						var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
+						$("#division_1000").css("left", left_1000);
+
+						Meter.recalculate_time_ranges(1);
+					}
+					
+				}
+				else {
+					
+					var secs3 = Meter.min_time.subtract(Meter.division_seconds);
+					control3 = Meter.seconds_control(secs3);
+					
+					if(control3) {
+						var division_html = "<div class='division_level_1 division' id='division_999' num='999'></div>";
+						$("#main_meter").prepend(division_html);
+						$("#division_999").width($("#division_0").width());
+
+						var left = parseFloat($("#division_0").css("left")) - $("#division_0").width();
+						$("#division_999").css("left", left);
+
+						var division_html = "<div class='division_level_1 division' id='division_1000' num='1000'></div>";
+						$("#main_meter").prepend(division_html);
+						$("#division_1000").width($("#division_0").width());
+
+						var num_of_divs = $(".division").length - 3;
+						var left = parseFloat($("#division_0").css("left")) - $("#division_0").width()*2;
+						$("#division_1000").css("left", left);
+
+						Meter.recalculate_time_ranges(2);
+					}
+
+				}
 			}
 			else {
-				// console.log("limit exceed");
-				var division_html = "<div class='division_level_1 division' id='division_999' num='999'></div>";
-				$("#main_meter").append(division_html);
-				$("#division_999").width($("#division_0").width());
-
-				var num_of_divs = $(".division").length - 2;
-				var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
 				
-				$("#division_999").css("left", left_1000);
-
-				var division_html = "<div class='division_level_1 division' id='division_1000' num='1000'></div>";
-				$("#main_meter").append(division_html);
-				$("#division_1000").width($("#division_0").width());
-
-				var num_of_divs = $(".division").length - 3;
-				var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
-				$("#division_1000").css("left", left_1000);
+				var secs4 = Meter.max_time.add(Meter.division_seconds);
+				var secs5 = Meter.max_time.add(Meter.division_seconds.multiply(2));
 				
-				Meter.max_time = Meter.max_time.add(Meter.division_seconds.multiply(2));
+				control4 = Meter.seconds_control(secs4);
+				control5 = Meter.seconds_control(secs5);
+				
+				if(control4) {
+					var division_html = "<div class='division_level_1 division' id='division_999' num='999'></div>";
+					$("#main_meter").append(division_html);
+					$("#division_999").width($("#division_0").width());
+
+					var num_of_divs = $(".division").length - 2;
+					var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
+
+					$("#division_999").css("left", left_1000);
+				}
+				
+				if(control5) {
+					var division_html = "<div class='division_level_1 division' id='division_1000' num='1000'></div>";
+					$("#main_meter").append(division_html);
+					$("#division_1000").width($("#division_0").width());
+
+					var num_of_divs = $(".division").length - 3;
+					var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
+					$("#division_1000").css("left", left_1000);
+				}
+				
+				if(control4 || control5) {
+					Meter.recalculate_time_ranges(3);
+				}
+				
 			}
 			
-			
-			$(".division").each(function(index){
-				$(this).attr("id","division_"+index);
-				$(this).attr("num",index);
-				var format_time = Meter.format_seconds(Meter.min_time.add(Meter.division_seconds*index));
-				$(this).text(format_time);
-			});
+			if(control1 || control2 || control3 || control4 || control5) {
+				$(".division").each(function(index){
+					var secs = Meter.min_time.add(Meter.division_seconds*index);
+					$(this).attr("id","division_"+index);
+					$(this).attr("num",index);
+					$(this).attr("secs",secs);
+					var format_time = Meter.format_seconds(secs);
+					$(this).text(format_time);
+				});
+			}
 
 		},
 		scroll : function(x,y,factor,mousex,mousey) {
+			Meter.center_div = Meter.zoom_center(y,mousex);
 			Meter.total_rerender(y,mousex);
+			Meter.y = y;
+			Meter.mousex = mousex;
 			$("#min").text(Meter.min_time);
 			$("#max").text(Meter.max_time);
 			$("#secs").text(Meter.division_seconds);
@@ -285,9 +410,65 @@
 		},
 		format_seconds : function(seconds) {
 			var round_seconds = seconds.intPart();
-			return round_seconds;
+			
+			var one_year = new BigNumber("31540000");
+			var solar_system = new BigNumber("-287960200000000000");
+			var text = "";			
+			
+			// between 13.7 - 9.13 billion years 
+			if(solar_system.compare(round_seconds)) {
+				var result = Meter.universe_age.subtract(round_seconds);
+				result = result.multiply((-1));
+				var check_zero = result.compare(0);
+				
+				if(check_zero == 0) {
+					text = "Big bang";
+				}
+				else if(result.compare(0)  && result.compare(60)<=0) {
+					text = result + " seconds";
+				}
+				else if(result.compare(60)>0 && result.compare(3600)<=0) {
+					var minutes = parseFloat(result.divide(60)).toFixed(2);
+					text = minutes + " minutes";
+				}
+				else if(result.compare(3600)>0 && result.compare(86400)<=0) {
+					var hours = parseFloat(result.divide(3600)).toFixed(2);
+					text = hours + " hours";
+				}
+				else if(result.compare(86400)>0 && result.compare(86400*7)<=0) {
+					var days = parseFloat(result.divide(86400)).toFixed(2);
+					text = days + " days";
+				}
+				else if(result.compare(86400*7)>0 && result.compare(86400*30)<=0) {
+					var weeks = parseFloat(result.divide(86400*7)).toFixed(2);
+					text = weeks + " weeks";
+				}
+				else if(result.compare(86400*30)>0 && result.compare(one_year)<=0) {
+					var months = parseFloat(result.divide(86400*30)).toFixed(2);
+					text = months + " months";
+				}
+				else if(result.compare(one_year)>0 && result.compare(one_year.multiply(1000))<=0) {
+					var years = parseFloat(result.divide(one_year)).toFixed(2);
+					text = years + " years";
+				}
+				else if(result.compare(one_year.multiply(1000))>0 && result.compare(one_year.multiply(1000000))<=0) {
+					var ka = parseFloat(result.divide(one_year.multiply(1000))).toFixed(2);
+					text = ka + " thousand years";
+				}
+				else if(result.compare(one_year.multiply(1000000))>0 && result.compare(one_year.multiply(1000000000))<=0) {
+					var ma = parseFloat(result.divide(one_year.multiply(1000000))).toFixed(2);
+					text = ma + " million years";
+				}
+				else if(result.compare(one_year.multiply(1000000000))>0) {
+					var ga = parseFloat(result.divide(one_year.multiply(1000000000))).toFixed(2);
+					text = ga + " billion years";
+				}
+			}
+			
+			return text;
 			
 		},
+		/*
 		correct_big_date : function(time,abbrevation) {
 			var value = 0;
 			switch(abbrevation) {
@@ -336,6 +517,6 @@
 			}
 			// console.log(value);
 			return value;
-		}
+		}*/
 	}
 })(jQuery);
