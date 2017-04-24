@@ -405,6 +405,7 @@
 			$("#min").text(Meter.min_time);
 			$("#max").text(Meter.max_time);
 			$("#secs").text(Meter.division_seconds);
+			Thoe.svg_jobs();
 		},
 		milestones : function() {
 			// Big bang to solar system: 0 - 9.13 billion years AFTER BIG BANG (BIG BANG)  
