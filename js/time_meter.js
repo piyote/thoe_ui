@@ -80,6 +80,8 @@
 			
 			if(min_sit && max_sit) {
 				// do nothing
+				Meter.max_time = Meter.year_10000;
+				console.log("both reached");
 			}
 			else {
 				if(min_sit) {
@@ -130,7 +132,7 @@
 		},
 		new_frames : function(num_of_divs,start_from = 0) {
 			for(i=start_from;i<num_of_divs;i++) {
-				var secs = Meter.min_time.add(Meter.division_seconds*i);
+				var secs = Meter.min_time.add(Meter.division_seconds.multiply(i));
 				
 				var control = Meter.seconds_control(secs);
 				if(control) {
@@ -218,11 +220,10 @@
 			if(((Meter.division_seconds<=1 && y>0)) || (Meter.min_time.compare(Meter.universe_age)<1 && Meter.max_time.compare(Meter.year_10000)>-1 && y<0) ) {
 				return;
 			}
-			var num_of_divs = $(".division").length;
+			// var num_of_divs = $(".division").length;
 			var first_item_initial_left = parseFloat($("#division_0").css("left"));
 			var old_width = $(".division").width();
 			var new_width = old_width*(1 + y/50);
-			var total_expand = new_width - old_width;
 			$(".division").width(new_width);
 			
 			$(".division").each(function(){
@@ -235,6 +236,11 @@
 			var num_of_divs = $(".division").length;
 			var division_width = $(".division").width();
 			var meter_with = $("#meter").width();
+			
+			if(num_of_divs>=Meter.max_num_of_divs) {
+				Meter.render();
+			}
+			
 			if(num_of_divs*division_width>=meter_with) {
 				if(num_of_divs<=Meter.min_num_of_divs ) {
 					Meter.render();
@@ -260,31 +266,27 @@
 			Meter.recalculate_time_ranges(4);
 		},
 		seconds_control : function(secs) {
-			// var result = true;
+			var result = true;
 			// if(secs.compare(Meter.universe_age)>0){
 			// 	result = false;
 			// 	Meter.min_time = Meter.universe_age;
-			// 	secs = Meter.min_time;
+			// 	// secs = Meter.min_time;
 			// }
 			// 
-			// if(secs.compare(Meter.year_10000)>0) {
-			// 	Meter.max_time = Meter.year_10000;
-			// 	result = false;
-			// 	secs = Meter.max_time;
-			// }
-			// 
-			// if(!result) {
-			// 	Meter.render();
-			// }
-			// return result;
-			return true;
-		},
-		add_two_divs : function() {
-			var num_of_divs = $(".division").length;
-			if(num_of_divs>=Meter.max_num_of_divs) {
-				Meter.render();
+			if(secs.compare(Meter.year_10000)>0) {
+				console.log("secs reached max");
+				Meter.max_time = Meter.year_10000;
+				result = false;
+				// secs = Meter.max_time;
 			}
 			
+			if(!result) {
+				// Meter.render();
+			}
+			return result;
+			// return true;
+		},
+		add_two_divs : function() {
 			var control1 = control2 = control3 = control4 = control5 = false;
 			if(Meter.min_time.compare(Meter.universe_age)) {
 				if(Meter.max_time.compare(Meter.year_10000)<0) {
@@ -359,6 +361,9 @@
 
 					$("#division_999").css("left", left_1000);
 				}
+				else {
+					console.log("secs > max");
+				}
 				
 				if(control5) {
 					var division_html = "<div class='division_level_1 division' id='division_1000' num='1000'></div>";
@@ -368,6 +373,10 @@
 					var num_of_divs = $(".division").length - 3;
 					var left_1000 = parseFloat($("#division_"+num_of_divs).css("left")) + $("#division_0").width() ;
 					$("#division_1000").css("left", left_1000);
+				}
+				
+				else {
+					console.log("secs > max 2");
 				}
 				
 				if(control4 || control5) {

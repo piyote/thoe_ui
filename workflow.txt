@@ -1,0 +1,80 @@
+construct
+	set_min_max
+	set_initial_line
+set_min_max
+	// set timeline time edges
+set_initial_line
+	// add main meter
+	render
+render
+	// recalculate min and max
+	control_max_min
+	// remove all divisions
+	new_frames
+control_max_min
+	// check both min and max values
+	// if they are bigger then the limits, reset them
+	// re-calculate division seconds
+recalculate_time_ranges
+	// a set of min max time calculations for various methods
+new_frames
+	// add new frames from start_from num_of_divs if the new division seconds are in the min max range
+	format_seconds
+mousex_convert
+	// convert mouse position for the meter
+calculate_left
+	// calculate division left position according to the limits
+	mousex_convert
+zoom_center
+	// calculate which div was centered on mouse zoom
+total_rerender
+	calculate_left // of all divs
+	frame control
+frame_control
+	// if sum of division widths bigger then meter width*2 :
+	remove divs
+	// if sum of division widths bigger then meter width and the number of divs is smaller then min_num_of_divs
+	render
+	// else if sum of division widths smaller then meter width
+	add _two_divs
+remove_two_divs
+	// remove first and last children
+	// reindex divisions
+	recalculate_time_ranges
+seconds_control
+	// if division seconds outside of the time ranges, fix time
+add_two_divs
+	// if number of divs are bigger than max_num_of_divs
+	render
+	// if min is in the limit
+		// if max is in the limit
+			// if div seconds are in the range
+				// add two divs to the edges
+				recalculate_time_ranges
+		// else
+			// if div seconds are in the range
+				// add two divs to the beginning
+				recalculate_time_ranges
+	// if min < universe age
+		// if div seconds are in the range
+			// add two divs at the end
+			recalculate_time_ranges
+scroll
+	total_rerender
+format_seconds
+	// format seconds to meaningful dates
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
