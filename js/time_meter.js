@@ -14,6 +14,9 @@
 		render_status : 0, // add_two_divs: 1,2,3; remove_two_divs: 4, render: 5
 		center_div : 0,
 		y : 0,
+		seconds_in_a_year : new BigNumber("31540000"),
+		milky_way : new BigNumber("-4570000000"),
+		human_prehistory : new BigNumber("-200000"),
 		// max_division_seconds : new BigNumber("315400000000"),
 		construct : function() {
 			var meter_with = $("#meter").width();
@@ -22,7 +25,7 @@
 			Thoe.timelines.forEach(function(timeline, index) {
 				Meter.set_min_max(timeline.result.item,index);
 		  	});
-			Meter.set_initial_line();
+			Meter.render();
 		},
 		set_min_max : function(timeline,index) {
 			var i = 0;
@@ -37,13 +40,7 @@
     			i++;
 		  	});
 		},
-		set_initial_line : function() {
-			var main_meter_html = "<div id='main_meter' class='full_border'></div>";
-			$("#meter").append(main_meter_html);
-			Meter.render();
-		},
 		render : function() {
-			
 			// divide main div into smaller parts
 			if(Meter.y>0) {
 
@@ -142,7 +139,7 @@
 					var division_width = meter_with/num_of_divs;
 					$("#division_"+i).width(division_width);
 					var format_time = Meter.format_seconds(secs);
-					$("#division_"+i).text(format_time);
+					$("#division_"+i).html(format_time);
 					$("#division_"+i).css("left",$("#division_"+i).attr("num")*$("#division_"+i).width());
 				}
 			}
@@ -392,7 +389,7 @@
 					$(this).attr("num",index);
 					$(this).attr("secs",secs);
 					var format_time = Meter.format_seconds(secs);
-					$(this).text(format_time);
+					$(this).html(format_time);
 				});
 			}
 
@@ -474,7 +471,8 @@
 					text = ga + " billion years";
 				}
 			}
-			
+			var max = Meter.division_seconds.add(seconds);
+			text = "<div class='division_secs' min='"+round_seconds+"' max='"+max+"'>"+text+"</div>"
 			return text;
 			
 		},

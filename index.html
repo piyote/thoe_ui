@@ -5,6 +5,7 @@
   <title>Thoe</title>
   <style type="text/css" media="all">
   @import url("css/style.css");
+  @import url("js/autocomplete/easy-autocomplete.css");
   </style>
   <script type="text/javascript" src="js/jquery-3.2.0.min.js"></script>
   <script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
@@ -12,8 +13,14 @@
   <script type="text/javascript" src="js/bignumber.js"></script>
   <script type="text/javascript" src="js/app.js"></script>
   <script type="text/javascript" src="js/time_meter.js"></script>
+  <script type="text/javascript" src="js/autocomplete/jquery.easy-autocomplete.min.js"></script>
+  <link href='//fonts.googleapis.com/css?family=Cormorant' rel='stylesheet'>
+
 </head>
 <body>
+	<div id="search">
+		<input type="text" id="search_tag" />
+	</div>
 	<div id="main_wrapper">
 		<div id="svg_map" >
 			<svg id="svg_canvas" height='100%' width='100%' xmlns="http://www.w3.org/2000/svg" version="1.1">
@@ -22,12 +29,22 @@
 		</div>
 		<div id="map">
 
-		  </div>
-		  <div id="meter">
-
-		  </div>
+		</div>
+		<div id="meter">
+			<div id='main_meter' class='full_border'></div>
+		</div>
+		<div id="shortcuts">
+		  	<ul>
+		  		<li time="bigbang">Big bang</li>
+		  		<li time="natural">Natural history</li>
+		  		<li time="prehistory">Human prehistory</li>
+		  		<li time="10_5_bc">10th-5th millenium BC</li>
+		  		<li time="0">0</li>
+		  	</ul>
+		</div>
 
 		<div class="clear_both"></div>
+
 	</div>
 	<div id="info">
 		<div id="min"></div>

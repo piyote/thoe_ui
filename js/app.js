@@ -21,14 +21,41 @@
 			if(document.domain=="localhost") {
 				Thoe.service_url = "http://localhost/thoe_services/";
 			}
+			
+			var options = {
+				url: function(phrase) {
+					return Thoe.service_url+"app/views/tags?display_id=page&name=" + phrase;
+				},
+				// url: Thoe.service_url+"app/views/tags?display_id=page&name="+$("#search_tag").val(),
+
+				dataType: "xml",
+				xmlElementName: "item",
+
+				getValue: function(element) {
+					return $(element).find("taxonomy_term_data_name").text();
+				},
+
+				list: {
+					match: {
+						enabled: true
+					},
+					onClickEvent: function() {
+						Thoe.refresh_line();
+					}
+				}
+			};
+
+			$("#search_tag").easyAutocomplete(options);
+			
 			Thoe.get_line();
 		},
 		get_line : function(filters) {
 		  $.get( Thoe.service_url + Thoe.app_path, filters )
 	      .done(function( data ) {
 	    	var json_data = xmlToJson(data);
-	        Thoe.timelines.push(json_data);
-			     Meter.construct();
+			var sorted = Thoe.rearrange_items(json_data);
+	        Thoe.timelines.push(sorted);
+			Meter.construct();
 			Thoe.render();
 			
 			$("#main_wrapper").height(Thoe.height);
@@ -45,13 +72,19 @@
 		},
 		refresh_line : function() {
 		  var filters = "&field_tis_value[min]="+Meter.min_time+"&field_tis_value[max]="+Meter.max_time;
+  		  if($("#search_tag").val()!="") {
+			filters += "&field_free_tagging_tid="+$("#search_tag").val();
+		  }
 		  $(".timeline").remove();
 		  $("#svg_canvas line").remove();
 		  $.get( Thoe.service_url + Thoe.app_path + filters )
 	      .done(function( data ) {
 	    	var json_data = xmlToJson(data);
+			var sorted = Thoe.rearrange_items(json_data);
+			// console.log("refresh line");
 			Thoe.timelines = [];
-	        Thoe.timelines.push(json_data);
+	        Thoe.timelines.push(sorted);
+			// Meter.construct();
 			Thoe.render();
 			
 			$("#main_wrapper").height(Thoe.height);
@@ -70,6 +103,27 @@
 			Thoe.svg_jobs();
 		// $("#svg_map").attr("height",Thoe.height);
 		},
+		rearrange_items : function(timeline) {
+			if(Array.isArray(timeline.result.item)) {
+				// console.log(timeline.result);
+				var byDate = timeline.result.item.slice(0,Thoe.max_items_on_a_line);
+				
+				byDate.sort(function(a,b) {
+					var c = new BigNumber(a.time_in_seconds["#text"]);
+					var d = new BigNumber(b.time_in_seconds["#text"]);
+					return c.subtract(d);
+				    // return d.compare(c);
+				});
+				
+				var sorted = {result:{item:byDate}};
+				return sorted;
+			}
+			else {
+				var item_pack = timeline.result.item;
+				var result = {result:{item:[item_pack]}};
+				return result;
+			}
+		},
 		set_timeline : function(timeline, index) { // create timeline for each line
 		  var timeline_html = "<div class='timeline' id='timeline_"+index+"'></div>";
 		  $("#map").append(timeline_html);
@@ -85,28 +139,28 @@
 		  new_map.css("background-color",rand_color);
 		  
 		  var total_items = timeline.length;
-		  total_items = (total_items>Thoe.max_items_on_a_line) ? Thoe.max_items_on_a_line : total_items;
+		  var absolute_total_items = (total_items>Thoe.max_items_on_a_line) ? Thoe.max_items_on_a_line : total_items;
 		  
 		  var i = 0;
 		  timeline.forEach(function(item, key) { // create items on the timeline
-    		var hidden = (i<total_items) ? "" : "hidden";
-			
-   			var item_html = "<div id='map_"+index+"_item_"+key+"' class='map_item "+hidden+"'></div>";
+    		// var hidden = (i<total_items) ? "" : "hidden";
+
+			var item_html = "<div id='map_"+index+"_item_"+i+"' class='map_item'></div>";
    			new_map.append(item_html);
-   			var new_item = $("#map_"+index+"_item_"+key);
+   			var new_item = $("#map_"+index+"_item_"+i);
    			new_item.css("top",(-1)*(Thoe.item_width-Thoe.line_height)/2); // todo: fix this to meet the relative height from top
    			new_item.css("width",Thoe.item_width);
    			new_item.css("height",Thoe.item_height);
-   			var empty_space = (Thoe.width - Thoe.left_padding - Thoe.item_width*total_items)/total_items;
+   			var empty_space = (Thoe.width - Thoe.left_padding - Thoe.item_width*absolute_total_items)/absolute_total_items;
    			var one_item_absolute_width = empty_space + Thoe.item_width;
-   			new_item.css("left",one_item_absolute_width*key+Thoe.left_padding);
-   			
+   			new_item.css("left",one_item_absolute_width*i*1+Thoe.left_padding);
+
 			item.image["#text"] = (item.image["#text"]!=undefined) ? item.image["#text"] : "";
    			new_item.append("<div class='node_image' >"+item.image["#text"]+"</div>");
 			new_item.attr("secs",item.time_in_seconds["#text"]);
-   			
+
    			var img_url = new_item.find(".node_image img").attr("src");
-   			
+
 			if(item.image["#text"]!=undefined) {
 				new_item.find(".node_image").css("background-image","url('"+img_url+"')");
 	   			new_item.find(".node_image img").remove();
@@ -116,9 +170,10 @@
 			var node_top = Thoe.item_width*0.925;
 			new_item.append("<div class='node_date' style='width:"+Thoe.item_width+"px;top:"+date_top+"px;'>"+date+"</div>");
 			new_item.append("<div class='node_title' style='width:"+Thoe.item_width+"px;top:"+node_top+"px;'>"+item.node_title["#text"]+"</div>");
-
-   			i++;
+			i++;
+   			
 		  });
+			
 		},
 		date_format : function(item) {
 			var date = "";

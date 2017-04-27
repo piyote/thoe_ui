@@ -1,6 +1,13 @@
 body{
 	margin:0;
 	padding:0;
+    
+	
+}
+
+#main_wrapper{
+	font-family: 'Cormorant';
+	font-size: 12px;
 }
 
 .timeline{
@@ -69,7 +76,7 @@ body{
     height: 51px;
     position: absolute;
     bottom: 0;
-    font-family: helvetica;
+/*    font-family: helvetica;*/
     font-size: 12px;
     overflow: hidden;
     border-right: 1px solid #ccc;
@@ -81,7 +88,7 @@ body{
 }
 
 .full_border{
-	border-top:1px solid #ccc;
+	border-top:1px solid #eee;
 /*	border-bottom:1px solid #ccc;*/
 }
 
@@ -98,6 +105,14 @@ body{
 	height:50px;
 /*	float:left;*/
 	position:absolute;
+
+}
+
+.division_secs {
+	padding:10px;
+	cursor:pointer;
+	color:#3d7411;
+	z-index:100;
 }
 
 .clear_both{
@@ -122,27 +137,45 @@ body{
 .node_date{
     position: absolute;
     text-align: center;
-    font-family: Helvetica;
+/*    font-family: Helvetica;*/
     font-weight: lighter;
     color: #000;
     font-size: 12px;
+    background-color: #fff;
 }
 
 .node_title{
     position: absolute;
     text-align: center;
-    font-family: Helvetica;
+/*    font-family: Helvetica;*/
     font-weight: normal;
     color: #000;
     font-size: 16px;
+    background-color: #fff;
 }
 
+#search{
+    margin: 10px auto;
+    position: absolute;
+    z-index: 10;
+    left: 670px;
+}
 
+#shortcuts{
+	z-index: 10;
+    position: absolute;
+    right: 20px;
+    text-align: right;
+}
 
+#shortcuts ul{
+	list-style:none;
+}
 
-
-
-
+#shortcuts li{
+	cursor:pointer;
+	color:#7ba0de;
+}
 
 
 
