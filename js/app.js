@@ -228,8 +228,16 @@
 				if(item.agoafter["#text"]=="after") {
 					date += " after big bang";
 				}
-				else {
+				else if(item.agoafter["#text"]=="ago") {
 					date += " ago";
+				}
+				else {
+					if(item.ad_bc["#text"]=="BC") {
+						date = item.year["#text"] + " BC"; 
+					}
+					else {
+						date = item.day["#text"] + " " + item.month["#text"] + " " + item.year["#text"];
+					}
 				}
 			}
 			return date;

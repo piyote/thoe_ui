@@ -50,26 +50,45 @@ function xmlToJson(xml) {
 				case "bigbang":
 					Meter.min_time = Meter.universe_age;
 					Meter.max_time = Meter.universe_age.add(100);
+					Meter.division_seconds = new BigNumber("10");
 					break;
 				case "natural":
 					Meter.min_time = Meter.seconds_in_a_year.multiply(Meter.milky_way);
 					var till = new BigNumber("-200000");
 					Meter.max_time = till.multiply(Meter.seconds_in_a_year);
+					Meter.division_seconds = new BigNumber("10");
 					break;
 				case "prehistory":
 					Meter.min_time = Meter.seconds_in_a_year.multiply(Meter.human_prehistory);
 					Meter.max_time = Meter.seconds_in_a_year.multiply(-10000);
+					Meter.division_seconds = new BigNumber("10");
 					break;
 				case "10_5_bc":
 					var till = new BigNumber("-10000");
 					Meter.min_time = till.multiply(Meter.seconds_in_a_year);
 					var mill = new BigNumber("-5000");
 					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
+					Meter.division_seconds = new BigNumber("10");
+					break;
+				case "40_19_c":
+					var till = new BigNumber("-5000");
+					Meter.min_time = till.multiply(Meter.seconds_in_a_year);
+					var mill = new BigNumber("-1900");
+					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
+					Meter.division_seconds = new BigNumber("10");
+					break;
+				case "1790_740_bc":
+					var till = new BigNumber("-1790");
+					Meter.min_time = till.multiply(Meter.seconds_in_a_year);
+					var mill = new BigNumber("-740");
+					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
+					Meter.division_seconds = new BigNumber("10");
 					break;
 				case "0":
 					Meter.min_time = new BigNumber("0");
 					var till = new BigNumber("2000");
 					Meter.max_time = till.multiply(Meter.seconds_in_a_year);
+					Meter.division_seconds = new BigNumber("10");
 					break;
 			}
 			Thoe.refresh_line();
