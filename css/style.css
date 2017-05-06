@@ -124,6 +124,7 @@ body{
 	top:10px;
 	left:10px;
 	border:1px solid #ccc;
+	display:none;
 }
 
 #svg_map{
