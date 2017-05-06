@@ -77,7 +77,7 @@ function xmlToJson(xml) {
 					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
 					Meter.division_seconds = new BigNumber("10");
 					break;
-				case "1790_740_bc":
+				case "1790_490_bc":
 					var till = new BigNumber("-1790");
 					Meter.min_time = till.multiply(Meter.seconds_in_a_year);
 					var mill = new BigNumber("-490");
