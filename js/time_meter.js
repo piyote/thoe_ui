@@ -68,11 +68,13 @@
 			var min_sit = false;
 			var max_sit = false;
 			if(Meter.min_time.compare(Meter.universe_age)>0){
-				min_sit = true;
+				// min_sit = true;
+				console.log("min reached");
 			}
 			
 			if(Meter.max_time.compare(Meter.year_10000)>-1) {
 				max_sit = true;
+				console.log("max reached");
 			}
 			
 			if(min_sit && max_sit) {
@@ -82,9 +84,11 @@
 			}
 			else {
 				if(min_sit) {
+					console.log("sit 1");
 					Meter.min_time = Meter.universe_age;
 				}
 				else if (max_sit) {
+					console.log("sit 2");
 					Meter.max_time = Meter.year_10000;
 				}
 			}
@@ -93,6 +97,7 @@
 			Meter.division_seconds = total_seconds_on_timeline.divide(Meter.initial_number_of_divisions);
 			
 			if(render) {
+				console.log("render me");
 				Meter.render();
 			}
 			
@@ -418,12 +423,22 @@
 		format_seconds : function(seconds) {
 			var round_seconds = seconds.intPart();
 			
+			$("#min").text(Meter.min_time);
+			$("#max").text(Meter.max_time);
+			$("#secs").text(Meter.division_seconds);
+			$("#current").text(round_seconds);
+			
 			var one_year = new BigNumber("31540000");
 			var solar_system = new BigNumber("-287960200000000000");
 			var text = "";			
 			
+			
+			var solar_system_int = -287960200000000000;
+			var natural_history_int = -315400000000;
+			
+			// console.log(round_seconds>solar_system_int);
 			// between 13.7 - 9.13 billion years 
-			if(solar_system.compare(round_seconds)) {
+			if(round_seconds<solar_system_int) {
 				var result = Meter.universe_age.subtract(round_seconds);
 				result = result.multiply((-1));
 				var check_zero = result.compare(0);
@@ -455,11 +470,11 @@
 					text = months + " months";
 				}
 				else if(result.compare(one_year)>0 && result.compare(one_year.multiply(1000))<=0) {
-					var years = parseFloat(result.divide(one_year)).toFixed(2);
+					var years = parseInt(result.divide(one_year));
 					text = years + " years";
 				}
 				else if(result.compare(one_year.multiply(1000))>0 && result.compare(one_year.multiply(1000000))<=0) {
-					var ka = parseFloat(result.divide(one_year.multiply(1000))).toFixed(2);
+					var ka = parseInt(result.divide(one_year.multiply(1000)));
 					text = ka + " thousand years";
 				}
 				else if(result.compare(one_year.multiply(1000000))>0 && result.compare(one_year.multiply(1000000000))<=0) {
@@ -471,6 +486,40 @@
 					text = ga + " billion years";
 				}
 			}
+			else if(round_seconds>=solar_system_int && round_seconds<natural_history_int) {
+				var result = new BigNumber(round_seconds);
+				result = result.multiply((-1));
+				
+				if(result.compare(one_year.multiply(1000))>0 && result.compare(one_year.multiply(1000000))<=0) {
+					var ka = parseInt(result.divide(one_year.multiply(1000)));
+					text = ka + " thousand years ago";
+					
+				}
+				else if(result.compare(one_year.multiply(1000000))>0 && result.compare(one_year.multiply(1000000000))<=0) {
+					var ma = parseInt(result.divide(one_year.multiply(1000000)));
+					text = ma + " million years ago";
+				}
+				else if(result.compare(one_year.multiply(1000000000))>0) {
+					var ga = parseInt(result.divide(one_year.multiply(1000000000)));
+					text = ga + " billion years ago";
+				}
+			}
+			else if(round_seconds>=natural_history_int && round_seconds<0) {
+				var result = new BigNumber(round_seconds);
+				result = result.multiply((-1));
+				
+				var ka = parseInt(result.divide(one_year));
+				text = ka + " BC";
+				
+			}
+			else if(round_seconds>=0) {
+				var result = new BigNumber(round_seconds);
+				
+				var ka = parseInt(result.divide(one_year));
+				text = ka;
+				
+			}
+			
 			var max = Meter.division_seconds.add(seconds);
 			text = "<div class='division_secs' min='"+round_seconds+"' max='"+max+"'>"+text+"</div>"
 			return text;

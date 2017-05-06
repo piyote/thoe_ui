@@ -154,8 +154,12 @@
    			var empty_space = (Thoe.width - Thoe.left_padding - Thoe.item_width*absolute_total_items)/absolute_total_items;
    			var one_item_absolute_width = empty_space + Thoe.item_width;
    			new_item.css("left",one_item_absolute_width*i*1+Thoe.left_padding);
-
-			item.image["#text"] = (item.image["#text"]!=undefined) ? item.image["#text"] : "";
+			
+			
+			if(item.image["#text"]==undefined) {
+				item.image["#text"] = "";
+			}
+			
    			new_item.append("<div class='node_image' >"+item.image["#text"]+"</div>");
 			new_item.attr("secs",item.time_in_seconds["#text"]);
 
