@@ -178,19 +178,79 @@ body{
 	color:#7ba0de;
 }
 
+.map_item{
+	cursor:pointer;
+}
 
+#node_details_wrapper{
+	display:none;
+  width: 52%;
+  background-color: #fff;
+  position: fixed;
+  border: 1px solid #ccc;
+  padding: 10px;
+  top: 47px;
+  left: 30%;
+  z-index: 11;
+  max-height: 90%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  font-family: 'Dosis';
+}
 
+.close{
+	  display:none;
+    width: 8px;
+    height: 14px;
+    border: 1px solid #000;
+    cursor: pointer;
+    position: fixed;
+    background-color: #eee;
+    padding: 3px 5px;
+    font-weight: bolder;
+    font-family: arial;
+    top: 25px;
+    left: 29.2%;
+    z-index: 12;
+}
 
+#node_details .item-list h2{
+	display:none;
+}
 
+#node_details .item-list .media-youtube-video iframe{
+  width:160px;
+  height:120px;
+}
 
+#node_details .item-list ul{
+  margin:12px 0 0 0px;
+  padding:0px;
+}
 
+#node_details .item-list ul li{
+    margin: 0px;
+    padding: 0px 10px 16px;
+    display: inline;
+    float: left;
+}
 
+.node_title_in_details{
+	font-weight:bold;
+}
 
-
-
-
-
-
+#shade{
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display:none;
+}
 
 
 

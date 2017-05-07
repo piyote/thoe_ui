@@ -77,17 +77,18 @@ function xmlToJson(xml) {
 					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
 					Meter.division_seconds = new BigNumber("10");
 					break;
-				case "1790_490_bc":
+				case "1790_500_bc":
 					var till = new BigNumber("-1790");
 					Meter.min_time = till.multiply(Meter.seconds_in_a_year);
-					var mill = new BigNumber("-490");
+					var mill = new BigNumber("-500");
 					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
 					Meter.division_seconds = new BigNumber("10");
 					break;
-				case "0":
-					Meter.min_time = new BigNumber("0");
-					var till = new BigNumber("2000");
-					Meter.max_time = till.multiply(Meter.seconds_in_a_year);
+				case "500bc_0":
+					var till = new BigNumber("-500");
+					Meter.min_time = till.multiply(Meter.seconds_in_a_year);
+					var mill = new BigNumber("0");
+					Meter.max_time = mill.multiply(Meter.seconds_in_a_year);
 					Meter.division_seconds = new BigNumber("10");
 					break;
 			}
@@ -97,12 +98,40 @@ function xmlToJson(xml) {
 			Meter.render();
 		});
 		
+		
 		$("#main_meter").on('click','.division_secs',function(){
 			Meter.min_time = new BigNumber($(this).attr("min"));
 			Meter.max_time = new BigNumber($(this).attr("max"));
 			Thoe.refresh_line();
 			Meter.render();
 		});			
+		
+		$("#map").on('click','.map_item',function(){
+			$("#node_details_wrapper").show();
+			$(".close").show();
+			var num = $(this).attr("num");
+			$("#node_details").html(Thoe.node_details[num]);
+			$("#shade").show();
+		});		
+		
+		$("body").on('click','.close',function(){
+			$("#node_details").html("");
+			$("#node_details_wrapper").hide();
+			$(".close").hide();
+			$("#shade").hide();
+		});	
+
+		$(document).mouseup(function(e) {
+		    var $container = $("#node_details_wrapper");
+
+		    // if the target of the click isn't the container nor a descendant of the container
+		    if (!$container.is(e.target) && $container.has(e.target).length === 0) {
+		        $container.hide();
+		        $(".close").hide();
+				$("#shade").hide();
+				$("#node_details").html("");
+		    }
+		});
 		
 	});
 })(jQuery);

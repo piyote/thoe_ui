@@ -13,6 +13,7 @@
 		app_path : "app/views/nodes?display_id=page_1",
 		colors : ["#a39cb8","#bf3faa","#8cbfd9","#8bae85","#8bd8e3","#ba9cca","#d07777","#c99be3","#c5ab3d","#ecdd83","#7d89df","#ecaae2","#557979","#9c7375"],
 		timelines : [],
+		node_details : [],
 //		number_of_timelines : this.timelines.length,
 		construct_page : function()
 		{
@@ -48,6 +49,13 @@
 			$("#search_tag").easyAutocomplete(options);
 			
 			Thoe.get_line();
+			var ndw_left = (Thoe.width -  $("#node_details_wrapper").width())/2;
+			$("#node_details_wrapper").css("left",ndw_left);
+			
+			var search_left = (Thoe.width -  $("#search").width())/2;
+			$("#search").css("left",search_left);
+			
+			$(".close").css("left",ndw_left);
 		},
 		get_line : function(filters) {
 		  $.get( Thoe.service_url + Thoe.app_path, filters )
@@ -59,7 +67,7 @@
 			Thoe.render();
 			
 			$("#main_wrapper").height(Thoe.height);
-			$('body').on('mousewheel', function(event) {
+			$('#main_wrapper').on('mousewheel', function(event) {
 			    Meter.scroll(event.deltaX, event.deltaY, event.deltaFactor,event.pageX,event.pageY);
 				event.preventDefault();
 				
@@ -145,7 +153,7 @@
 		  timeline.forEach(function(item, key) { // create items on the timeline
     		// var hidden = (i<total_items) ? "" : "hidden";
 
-			var item_html = "<div id='map_"+index+"_item_"+i+"' class='map_item'></div>";
+			var item_html = "<div id='map_"+index+"_item_"+i+"' num='"+i+"' class='map_item'></div>";
    			new_map.append(item_html);
    			var new_item = $("#map_"+index+"_item_"+i);
    			new_item.css("top",(-1)*(Thoe.item_width-Thoe.line_height)/2); // todo: fix this to meet the relative height from top
@@ -174,6 +182,9 @@
 			var node_top = Thoe.item_width*0.925;
 			new_item.append("<div class='node_date' style='width:"+Thoe.item_width+"px;top:"+date_top+"px;'>"+date+"</div>");
 			new_item.append("<div class='node_title' style='width:"+Thoe.item_width+"px;top:"+node_top+"px;'>"+item.node_title["#text"]+"</div>");
+			
+			var node_details = "<div class='date_in_details'>"+date + "</div>" + "<div class='node_title_in_details'>"+item.node_title["#text"] + "</div>" + item.body["#text"] + item.book["#text"] + item.video_reference["#text"];
+			Thoe.node_details[i] = node_details;
 			i++;
    			
 		  });
@@ -236,11 +247,12 @@
 					date += " ago";
 				}
 				else {
+					var monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
+					var full_date = (item.month["#text"]>0) ? monthNames[item.month["#text"]-1] + " ": "";
+					full_date = (item.day["#text"]>0) ? full_date + item.day["#text"] + ", " : "";
+					date = full_date + item.year["#text"]
 					if(item.ad_bc["#text"]=="BC") {
-						date = item.year["#text"] + " BC"; 
-					}
-					else {
-						date = item.day["#text"] + " " + item.month["#text"] + " " + item.year["#text"];
+						date = date + " BC"; 
 					}
 				}
 			}
