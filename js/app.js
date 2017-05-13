@@ -10,6 +10,7 @@
 		left_padding : 100,
 		service_url : "http://services.thoe.co/",
 //		service_url : "http://localhost/thoe_services/",
+		language: "en",
 		app_path : "app/views/nodes?display_id=page_1",
 		colors : ["#a39cb8","#bf3faa","#8cbfd9","#8bae85","#8bd8e3","#ba9cca","#d07777","#c99be3","#c5ab3d","#ecdd83","#7d89df","#ecaae2","#557979","#9c7375"],
 		timelines : [],
@@ -25,7 +26,7 @@
 			
 			var options = {
 				url: function(phrase) {
-					return Thoe.service_url+"app/views/tags?display_id=page&name=" + phrase;
+					return Thoe.service_url+"app/views/tags?display_id=page&language="+Thoe.language+"&name=" + phrase;
 				},
 				// url: Thoe.service_url+"app/views/tags?display_id=page&name="+$("#search_tag").val(),
 
@@ -48,7 +49,13 @@
 
 			$("#search_tag").easyAutocomplete(options);
 			
-			Thoe.get_line();
+			$("#search_tag").on('keyup', function (e) {
+			    if (e.keyCode == 13) {
+			    	Thoe.refresh_line();
+			    }
+			});
+			var filter = {language: Thoe.language};
+			Thoe.get_line(filter);
 			var ndw_left = (Thoe.width -  $("#node_details_wrapper").width())/2;
 			$("#node_details_wrapper").css("left",ndw_left);
 			
@@ -79,7 +86,8 @@
 	      });
 		},
 		refresh_line : function() {
-		  var filters = "&field_tis_value[min]="+Meter.min_time+"&field_tis_value[max]="+Meter.max_time;
+		  Thoe.language = $("#lang_select option:selected").val();
+		  var filters = "&field_tis_value[min]="+Meter.min_time+"&field_tis_value[max]="+Meter.max_time+"&language="+Thoe.language;
   		  if($("#search_tag").val()!="") {
 			filters += "&field_free_tagging_tid="+$("#search_tag").val();
 		  }
@@ -183,10 +191,34 @@
 			new_item.append("<div class='node_date' style='width:"+Thoe.item_width+"px;top:"+date_top+"px;'>"+date+"</div>");
 			new_item.append("<div class='node_title' style='width:"+Thoe.item_width+"px;top:"+node_top+"px;'>"+item.node_title["#text"]+"</div>");
 			
-			var node_details = "<div class='date_in_details'>"+date + "</div>" + "<div class='node_title_in_details'>"+item.node_title["#text"] + "</div>" + item.body["#text"] + item.book["#text"] + item.video_reference["#text"];
+			var admin_links = "<div class='admin_links'><a target='_blank' href = '" +Thoe.service_url + "/node/"+ +item.nid["#text"]  + "/edit'>Edit</a> | <a target='_blank' href = '" +Thoe.service_url + "/thoe/delete/"+ +item.nid["#text"]  + "'>Delete</a></div>";
+			var books_html = item.book["#text"];
+			var videos_html = item.video_reference["#text"];
+			
+			books_html = (books_html==undefined) ? "": books_html;
+			videos_html = (videos_html==undefined) ? "": videos_html;
+			
+			var tags = "<div class='tags'>"+item.free_tagging["#text"]+"</div>";
+			var node_details = "<div class='first_details_wrapper'>"+admin_links+"<div class='date_in_details'>"+date + "</div>" + "<div class='node_title_in_details'>"+item.node_title["#text"] + " </div>" + item.body["#text"] +"</div>"+ books_html + videos_html + tags;
 			Thoe.node_details[i] = node_details;
 			i++;
    			
+			$(".node_title").each(function(){
+				var text = $(this).text();
+				var new_text = text.substring(0,56);
+				var rest = text.substring(56,150);
+				var final_text = new_text + "<div class='text_rest'>"+rest+"</div>";
+				$(this).html(final_text);
+			});
+			
+			$(".map_item").mouseover(function(){
+				$(this).find(".text_rest").show();
+			});
+			
+			$(".map_item").mouseout(function(){
+				$(this).find(".text_rest").hide();
+			});
+			
 		  });
 			
 		},
